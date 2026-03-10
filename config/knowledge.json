@@ -1,0 +1,52 @@
+{
+  "llm": {
+    "base_url": "",
+    "api_key": "",
+    "model": ""
+  },
+  "traversal": {
+    "keywords": [],
+    "cities": [],
+    "salary": [],
+    "experience": [],
+    "degree": [],
+    "industry": [],
+    "scale": []
+  },
+  "static": {
+    "profile": {
+      "name": "",
+      "skills": "",
+      "education": "",
+      "experience_summary": "",
+      "strengths": ""
+    },
+    "personality": {
+      "tone": "",
+      "greeting_style": "",
+      "avoid": ""
+    },
+    "preferences": {
+      "remote_ok": false,
+      "overtime_attitude": "",
+      "company_blacklist": [],
+      "keyword_blacklist": []
+    },
+    "limits": {
+      "daily_apply_max": 40,
+      "operation_interval_sec": [
+        5,
+        15
+      ],
+      "rest_every_n_operations": 10,
+      "rest_duration_sec": [
+        120,
+        300
+      ]
+    },
+    "scoring": {
+      "min_score_to_apply": 60,
+      "dimensions": "匹配程度、薪资性价比"
+    }
+  }
+}

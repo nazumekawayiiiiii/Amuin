@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.eggs/
+
+# Distribution / packaging
+build/
+dist/
+
+# Environments
+.env
+.envrc
+.venv/
+venv/
+env/
+
+# Runtime data
+data/
+
+# IDE / tools
+.idea/
+.vscode/
+.claude/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Test / coverage
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# Local-only docs & packaging (not published to repo)
+ARCHITECTURE.md
+GUIDE.md
+TECH_DEBT.md
+amuin.spec
+build.bat
+installer.iss
+static/image.bmp
+
+# Personal / non-project files
+session_user.txt
+Phalanx_V11_DAA.md
+SQL.py
+dannylailai-3.jpg
+docs/vue-probe-spec/
+已读不回提醒模块提示词设计理念.txt
+简历翻修稿.md
