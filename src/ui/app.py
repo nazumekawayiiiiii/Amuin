@@ -17,6 +17,48 @@ from ..utils.logger import QueueLogHandler
 from ..utils.paths import CONFIG_DIR, STATIC_DIR
 
 
+_DISCLAIMER = """\
+Amuin 使用必读及免责声明
+请您务必逐条仔细阅读。若您不接受以下提到的任何内容，请立即删除并停止使用本程序。
+
+1. 项目定位与稳定性（重要提示）
+Amuin 的初衷纯粹是为了个人场景下的技术学习与代码交流。这是一个由个人业余时间开发的，\
+目前处于极其早期的测试阶段（Alpha）。本程序没有经过大量、严谨的跨环境边界测试与迭代，\
+其测试用例仅覆盖了原作者个人的特定使用场景。
+因此，在您的设备上运行时，极大概率会出现报错、UI卡死、甚至程序闪退的情况。\
+如果您遇到这些问题，欢迎在 GitHub 提交 Issue 探讨。
+
+2. 违约风险与"风险隔离"（务必重视）
+本程序本质上属于一款模拟用户行为的自动化辅助工具。其运行机制不可避免地与\
+《BOSS直聘用户协议》的相关条款（如针对自动化脚本、非正常高频访问的限制）相违背。
+一旦您的自动化行为被平台风控系统监测到，您的账号将面临包括但不限于：\
+被强制下线、限制聊天功能、甚至账号被永久封禁等严厉处罚。
+强烈建议：为了进行严格的风险隔离，请务必使用小号或专门注册的全新账号来运行本程序！\
+不推荐使用您的主力大号进行测试。您选择使用本程序，即代表您完全知晓并愿意自行承担\
+账号被封禁等一切不利后果，本程序及原作者对此概不负责。
+
+3. 隐私保护与木马防范
+Amuin 需要在本地存储您的登录凭据（Cookie）以接管网页操作。请放心，本程序仅会将数据\
+存储在您的本地计算机中，且仅在自动操作时将凭据提交给目标招聘平台。程序绝对不会收集\
+您的任何个人信息，也不会将其上传、泄露给任何第三方（如猎头公司、数据机构）。
+安全警告：由于本程序完全开源，任何人都可以修改源码（例如植入窃取 Cookie 的后门木马）\
+并重新打包发布。因此，请务必认清来源和版本。
+
+4. 免费与非盈利声明
+Amuin 是一款完全免费的开源工具，没有任何内置的付费解锁功能，原作者也从未试图通过\
+本程序牟取任何利益。如果您是通过淘宝、闲鱼等渠道付费"购买"的本程序，或者在使用时\
+被提示"需要扫码付费/加群付费"，那么您百分之百遇到了诈骗，或者下载到了被恶意二次\
+篡改的版本。请直接向卖家发起退款维权，原作者不提供任何与金钱交易相关的售后服务。
+
+5. 求职结果免责与网页改版
+本程序仅负责代替您执行机械的"点击"与"打招呼"动作。对您投递的岗位真实性、公司的\
+可靠性，以及您最终的面试与 Offer 结果，本程序不提供任何担保。请您在沟通过程中自行\
+擦亮眼睛，防范招聘诈骗。
+此外，目标网站的 UI 改版或 A/B 测试随时可能导致 Amuin 的核心脚本瞬间失效。当您发现\
+程序无限循环或疯狂报错时，通常意味着网站结构变了，请停止使用并等待代码更新。
+"""
+
+
 class ClawApp(ctk.CTk):
     """Main application window."""
 
@@ -28,6 +70,7 @@ class ClawApp(ctk.CTk):
         self._stop_event = threading.Event()
         self._pause_event = threading.Event()
         self._running = False
+        self._disclaimer_accepted = False
 
         # Callbacks set by main.py
         self.on_start: callable = None  # (stop_event, pause_event) -> None
@@ -37,6 +80,11 @@ class ClawApp(ctk.CTk):
 
         self._setup_window()
         self._build_ui()
+
+        # Disclaimer gate — must accept before using the app
+        if not self._show_disclaimer():
+            return
+        self._disclaimer_accepted = True
         self._poll_logs()
 
     def _setup_window(self) -> None:
@@ -50,6 +98,64 @@ class ClawApp(ctk.CTk):
         icon_path = STATIC_DIR / "niuma.ico"
         if icon_path.is_file():
             self.iconbitmap(str(icon_path))
+
+    def _show_disclaimer(self) -> bool:
+        """Show disclaimer dialog. Returns True only if user clicks agree."""
+        agreed = [False]
+
+        dialog = ctk.CTkToplevel(self)
+        dialog.title("Amuin 使用必读及免责声明")
+        dialog.geometry("660x520")
+        dialog.resizable(False, False)
+
+        # Center on screen
+        dialog.update_idletasks()
+        x = (dialog.winfo_screenwidth() - 660) // 2
+        y = (dialog.winfo_screenheight() - 520) // 2
+        dialog.geometry(f"+{x}+{y}")
+
+        icon_path = STATIC_DIR / "niuma.ico"
+        if icon_path.is_file():
+            dialog.after(250, lambda: dialog.iconbitmap(str(icon_path)))
+
+        # Disclaimer text (read-only)
+        text_box = ctk.CTkTextbox(
+            dialog, wrap="word", font=ctk.CTkFont(size=13),
+        )
+        text_box.pack(fill="both", expand=True, padx=15, pady=(15, 10))
+        text_box.insert("end", _DISCLAIMER)
+        text_box.configure(state="disabled")
+
+        # Buttons
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=15, pady=(0, 15))
+
+        def on_agree():
+            agreed[0] = True
+            dialog.destroy()
+
+        def on_disagree():
+            dialog.destroy()
+
+        ctk.CTkButton(
+            btn_frame, text="不同意", width=100, command=on_disagree,
+            fg_color="#666666", hover_color="#555555",
+        ).pack(side="right", padx=5)
+        ctk.CTkButton(
+            btn_frame, text="同意并继续", width=120, command=on_agree,
+        ).pack(side="right", padx=5)
+
+        dialog.protocol("WM_DELETE_WINDOW", on_disagree)
+        dialog.grab_set()
+        self.wait_window(dialog)
+
+        return agreed[0]
+
+    def mainloop(self, *args, **kwargs):
+        if not self._disclaimer_accepted:
+            self.destroy()
+            return
+        super().mainloop(*args, **kwargs)
 
     def _build_ui(self) -> None:
         # ── Tab View ──
